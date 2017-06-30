@@ -152,7 +152,7 @@ class MyTableWidget(QWidget):
 
     def data_gen(self, t=0):
         cnt = 0
-
+'''
         with nidaqmx.Task() as task:
             task.ai_channels.add_ai_voltage_chan("Dev1/ai0")
             while cnt<1000:            
@@ -161,7 +161,7 @@ class MyTableWidget(QWidget):
                 cnt +=1
                 t +=0.1
                 yield t, data_np
- 
+ '''
 
  
 if __name__ == '__main__':
