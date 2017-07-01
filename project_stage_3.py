@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 import sys
 import os
 import random
+import time
 
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QInputDialog, QPushButton, QMainWindow, QApplication
@@ -19,6 +20,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
+plt.ion()
 import matplotlib.animation as animation
 
 import nidaqmx
@@ -93,7 +95,8 @@ class MyTableWidget(QWidget):
         self.tab2_layout = QHBoxLayout(self)             # create a Layout, which will be setted for tab_2
         
         self.tab2_layout_R = QVBoxLayout(self)
-        self.figure_R = plt.figure()
+        self.figure_R =  plt.figure()
+        #self.figure_R = plt.figure()
         #self.figure_R, self.ax_R = plt.subplots()                       # a figure instance to plot on
         # this is the Canvas Widget that displays the `figure`, it takes the `figure` instance as a parameter to __init__
         self.canvas_R = FigureCanvas(self.figure_R)
@@ -106,8 +109,6 @@ class MyTableWidget(QWidget):
 
         self.tab2_layout_L = QVBoxLayout(self)
         self.figure_L = plt.figure()
-        #self.figure_R, self.ax_R = plt.subplots()                       # a figure instance to plot on
-        # this is the Canvas Widget that displays the `figure`, it takes the `figure` instance as a parameter to __init__
         self.canvas_L = FigureCanvas(self.figure_L)
         self.toolbar_L = NavigationToolbar(self.canvas_L, self) # this is the Navigation widget, it takes the Canvas widget and a parent
         self.button_plot_L = QPushButton('Plot')           # Just some button connected to `plot` method
@@ -128,22 +129,9 @@ class MyTableWidget(QWidget):
 
     def plot_L(self):
         ''' plot some random stuff '''
-        # random data
-        data = [random.random() for i in range(10)]
+        pass
 
-        # instead of ax.hold(False)
-        self.figure_L.clear()
 
-        # create an axis
-        ax_L = self.figure_L.add_subplot(111)
-
-        # plot data
-        ax_L.plot(data, '*-')
-
-        # refresh canvas
-        self.canvas_L.draw()
-
-        
 
     def getInteger(self):
         i, okPressed = QInputDialog.getInt(self, "Get integer","Percentage:", 28, 0, 100, 1)
@@ -164,12 +152,10 @@ class MyTableWidget(QWidget):
         self.line_R.set_data(self.xdata_R, self.ydata_R) 
         self.ax_R.set_ylim(-2, 2)
         self.ax_R.set_xlim(0, 10)
-        
+        self.ax_R.autoscale_view(True,True,True)
         ani = animation.FuncAnimation(self.figure_R, self.update, self.data_gen, blit=True, interval=1,
                               repeat=True)
-        #self.figure_R.show()
         # refresh canvas
-        #self.figure_R.canvas.draw()
         self.ax_R.figure.canvas.draw()
 
 
@@ -181,8 +167,10 @@ class MyTableWidget(QWidget):
         #print("x = ", x,"        ", "y =" , y)
         if x >= xmax:
             self.ax_R.set_xlim(0, 2*xmax)
+            #plt.draw()
             self.ax_R.figure.canvas.draw()
-            #self.canvas_R.draw()
+            #self.ax_R.figure.canvas.draw()
+
             print("figure_axes changed")
 
         self.line_R.set_data(self.xdata_R, self.ydata_R)
