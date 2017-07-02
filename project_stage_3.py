@@ -114,12 +114,12 @@ class MyTableWidget(QWidget):
 
         self.tab2_layout_L = QVBoxLayout(self)
         
-        #self.canvas_L = FigureCanvas(self.figure_L)
-        #self.toolbar_L = NavigationToolbar(self.canvas_L, self) # this is the Navigation widget, it takes the Canvas widget and a parent
+        self.canvas_L = FigureCanvas(self.figure_L)
+        self.toolbar_L = NavigationToolbar(self.canvas_L, self) # this is the Navigation widget, it takes the Canvas widget and a parent
         self.button_plot_L = QPushButton('Plot')           # Just some button connected to `plot` method
         self.button_plot_L.clicked.connect(self.plot_L)      
-        #self.tab2_layout_L.addWidget(self.toolbar_L)         # this also needed to show the Navigation of plot
-        #self.tab2_layout_L.addWidget(self.canvas_L)          # add Canvas Widget(plot widget) onto tab_2
+        self.tab2_layout_L.addWidget(self.toolbar_L)         # this also needed to show the Navigation of plot
+        self.tab2_layout_L.addWidget(self.canvas_L)          # add Canvas Widget(plot widget) onto tab_2
         self.tab2_layout_L.addWidget(self.button_plot_L)
 
 
@@ -132,23 +132,6 @@ class MyTableWidget(QWidget):
         self.tab2.setLayout(self.tab2_layout)              # set tab2.layout to be the layout of tab_2       
 
 
-    def plot_L(self):
-        ''' plot some random stuff '''
-        plt.ioff()   
-       # print(matplotlib.is_interactive()) 
-        x = np.linspace(0, 6*np.pi, 100)
-        y = np.sin(x)
-        line, = self.ax_L.plot(x, y, 'r-')
-        
-        for phase in np.linspace(0, 5*np.pi, 10):
-            line.set_ydata(np.sin(x + phase))
-            #self.ax_L.figure.canvas.draw()        # this will show the fig in the canvas if you add canvas in UI_tab_2
-            plt.draw()                                      # this shows the fig in a seperate windows
- 
-            print(matplotlib.is_interactive())
-            plt.pause(0.5)
-            
-        plt.ion()
 
 
     def getInteger(self):
@@ -159,10 +142,47 @@ class MyTableWidget(QWidget):
             print(i)
             print("amp = ", self.amp)
     
-    def plot_R(self):
+    def plot_L(self):
         ''' plot some random stuff '''
 
-        #self.ax_R = self.figure_R.add_subplot(111)
+        self.line_L, = self.ax_L.plot([], [], animated=True)  
+        #import to use "self.ax_L.plot" not "plt.plot" that will mix two figures
+        
+        self.xdata_L, self.ydata_L = [], []
+        self.line_L.set_data(self.xdata_L, self.ydata_L) 
+        self.ax_L.set_ylim(-2, 2)
+        self.ax_L.set_xlim(0, 10)
+        self.ax_L.autoscale_view(True,True,True)
+        ani_L = animation.FuncAnimation(self.figure_L, self.update_L, self.data_gen_L, blit=True, interval=1,
+                              repeat=True)
+        # refresh canvas
+        self.ax_L.figure.canvas.draw()
+        
+    def update_L(self, data):
+        x, y = data
+        self.xdata_L.append(x)
+        self.ydata_L.append(y)
+        xmin, xmax = self.ax_L.get_xlim()
+        #print("x = ", x,"        ", "y =" , y)
+        if x >= xmax:
+            self.ax_L.set_xlim(0, 2*xmax)
+            #plt.draw()
+            self.ax_L.figure.canvas.draw()
+
+            print("figure_axes changed")
+
+        self.line_L.set_data(self.xdata_L, self.ydata_L)
+        return self.line_L,
+
+    def data_gen_L(self, t=0):
+        cnt = 0
+        while cnt < 1000:
+            cnt += 1
+            t += 0.1
+            yield t, np.sin(t) * np.exp(-t/10.)
+    
+    def plot_R(self):
+        ''' plot some random stuff '''
 
         self.line_R, = self.ax_R.plot([], [], animated=True)  
         #import to use "self.ax_R.plot" not "plt.plot" that will mix two figures
@@ -172,14 +192,11 @@ class MyTableWidget(QWidget):
         self.ax_R.set_ylim(-2, 2)
         self.ax_R.set_xlim(0, 10)
         self.ax_R.autoscale_view(True,True,True)
-        ani = animation.FuncAnimation(self.figure_R, self.update, self.data_gen, blit=True, interval=1,
+        ani_R = animation.FuncAnimation(self.figure_R, self.update, self.data_gen, blit=True, interval=1,
                               repeat=True)
         # refresh canvas
         self.ax_R.figure.canvas.draw()
         
-
-
-
     def update(self, data):
         x, y = data
         self.xdata_R.append(x)
