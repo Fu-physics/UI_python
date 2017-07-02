@@ -20,7 +20,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
-plt.ion()
+
 import matplotlib.animation as animation
 
 import nidaqmx
@@ -95,9 +95,14 @@ class MyTableWidget(QWidget):
         self.tab2_layout = QHBoxLayout(self)             # create a Layout, which will be setted for tab_2
         
         self.tab2_layout_R = QVBoxLayout(self)
-        self.figure_R =  plt.figure()
+        #self.figure_R =  plt.figure()
         #self.figure_R = plt.figure()
-        #self.figure_R, self.ax_R = plt.subplots()                       # a figure instance to plot on
+        self.figure_R, self.ax_R = plt.subplots()                       # a figure instance to plot on
+        self.figure_L, self.ax_L = plt.subplots()
+
+        plt.ion()                                       #if put "plt.ion" on the head, which will make two more figures idependently.
+        print(matplotlib.is_interactive())
+
         # this is the Canvas Widget that displays the `figure`, it takes the `figure` instance as a parameter to __init__
         self.canvas_R = FigureCanvas(self.figure_R)
         self.toolbar_R = NavigationToolbar(self.canvas_R, self) # this is the Navigation widget, it takes the Canvas widget and a parent
@@ -108,13 +113,13 @@ class MyTableWidget(QWidget):
         self.tab2_layout_R.addWidget(self.button_plot_R)
 
         self.tab2_layout_L = QVBoxLayout(self)
-        self.figure_L = plt.figure()
-        self.canvas_L = FigureCanvas(self.figure_L)
-        self.toolbar_L = NavigationToolbar(self.canvas_L, self) # this is the Navigation widget, it takes the Canvas widget and a parent
+        
+        #self.canvas_L = FigureCanvas(self.figure_L)
+        #self.toolbar_L = NavigationToolbar(self.canvas_L, self) # this is the Navigation widget, it takes the Canvas widget and a parent
         self.button_plot_L = QPushButton('Plot')           # Just some button connected to `plot` method
         self.button_plot_L.clicked.connect(self.plot_L)      
-        self.tab2_layout_L.addWidget(self.toolbar_L)         # this also needed to show the Navigation of plot
-        self.tab2_layout_L.addWidget(self.canvas_L)          # add Canvas Widget(plot widget) onto tab_2
+        #self.tab2_layout_L.addWidget(self.toolbar_L)         # this also needed to show the Navigation of plot
+        #self.tab2_layout_L.addWidget(self.canvas_L)          # add Canvas Widget(plot widget) onto tab_2
         self.tab2_layout_L.addWidget(self.button_plot_L)
 
 
@@ -124,13 +129,26 @@ class MyTableWidget(QWidget):
         self.tab2_layout.addLayout(self.tab2_layout_R)
         ############################################################################################
 
-        self.tab2.setLayout(self.tab2_layout)            # set tab2.layout to be the layout of tab_2       
+        self.tab2.setLayout(self.tab2_layout)              # set tab2.layout to be the layout of tab_2       
 
 
     def plot_L(self):
         ''' plot some random stuff '''
-        pass
-
+        plt.ioff()   
+       # print(matplotlib.is_interactive()) 
+        x = np.linspace(0, 6*np.pi, 100)
+        y = np.sin(x)
+        line, = self.ax_L.plot(x, y, 'r-')
+        
+        for phase in np.linspace(0, 5*np.pi, 10):
+            line.set_ydata(np.sin(x + phase))
+            #self.ax_L.figure.canvas.draw()        # this will show the fig in the canvas if you add canvas in UI_tab_2
+            plt.draw()                                      # this shows the fig in a seperate windows
+ 
+            print(matplotlib.is_interactive())
+            plt.pause(0.5)
+            
+        plt.ion()
 
 
     def getInteger(self):
@@ -143,7 +161,8 @@ class MyTableWidget(QWidget):
     
     def plot_R(self):
         ''' plot some random stuff '''
-        self.ax_R = self.figure_R.add_subplot(111)
+
+        #self.ax_R = self.figure_R.add_subplot(111)
 
         self.line_R, = self.ax_R.plot([], [], animated=True)  
         #import to use "self.ax_R.plot" not "plt.plot" that will mix two figures
@@ -157,6 +176,8 @@ class MyTableWidget(QWidget):
                               repeat=True)
         # refresh canvas
         self.ax_R.figure.canvas.draw()
+        
+
 
 
     def update(self, data):
@@ -169,7 +190,6 @@ class MyTableWidget(QWidget):
             self.ax_R.set_xlim(0, 2*xmax)
             #plt.draw()
             self.ax_R.figure.canvas.draw()
-            #self.ax_R.figure.canvas.draw()
 
             print("figure_axes changed")
 
