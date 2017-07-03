@@ -20,12 +20,12 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
-
 import matplotlib.animation as animation
 
 import nidaqmx
 
-from dy_plot_in_canvas import UI_figure
+from dy_plot import UI_figure
+import Scope_data
 
 progname = os.path.basename(sys.argv[0])
 progversion = "0.1"
@@ -75,6 +75,7 @@ class MyTableWidget(QWidget):
         self.initalUI_tab_1()
         self.initalUI_tab_2()
 
+
     def initalUI_tab_1(self):
                                                          # Create first tab
         self.tab1_layout = QHBoxLayout(self)             # create a Layout, which will be setted for tab1
@@ -82,12 +83,20 @@ class MyTableWidget(QWidget):
         self.tab1_layout_R = QVBoxLayout(self)
         self.btn = QPushButton('getInteger', self)
         self.btn.clicked.connect(self.getInteger)
-        self.pushButton1 = QPushButton("PyQt5 button")
+
+        self.button_scope_pre = QPushButton("Connecte to Scope")
+        self.button_scope_pre.clicked.connect(self.connect_Scope)
+
+
+        self.button_scope = QPushButton("Get Scope Figure")
+        self.button_scope.clicked.connect(self.get_Scope_fig)
+
         self.button_plot_tab1 = QPushButton('Plot')           # Just some button connected to `plot` method
         self.button_plot_tab1.clicked.connect(self.plot_tab1)
 
         self.tab1_layout_R.addWidget(self.btn)             # add buttons onto tabl1.layout
-        self.tab1_layout_R.addWidget(self.pushButton1)
+        self.tab1_layout_R.addWidget(self.button_scope_pre)
+        self.tab1_layout_R.addWidget(self.button_scope)
         self.tab1_layout_R.addWidget(self.button_plot_tab1)
 
         self.tab1_layout.addStretch()                     # put the plot_layout right side
@@ -136,7 +145,24 @@ class MyTableWidget(QWidget):
 
         self.tab2.setLayout(self.tab2_layout)              # set tab2.layout to be the layout of tab_2       
 
+    def get_Scope_fig(self):
+        print("begin to get the Scope figure !")
+        try:
+            self.scope.get_data()
+            print("Got the Scope's Figuer")
+        except:
+            print("Fail to get the Scope's Figuer. Do it again!")
 
+        
+
+    def connect_Scope(self):
+        print("connecting with Scope")
+        try:
+            self.scope = Scope_data.OscilloScope_data(1000)
+            self.scope.preparation()
+            print("Connected with Scope.")
+        except:
+            print("Fail to connecte with Scope. Do it again!")
 
 
     def getInteger(self):
