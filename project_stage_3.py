@@ -152,6 +152,7 @@ class MyTableWidget(QWidget):
         self.line_L.set_data(self.xdata_L, self.ydata_L) 
         self.ax_L.set_ylim(-2, 2)
         self.ax_L.set_xlim(0, 10)
+        self.ax_L.relim()
         self.ax_L.autoscale_view(True,True,True)
         ani_L = animation.FuncAnimation(self.figure_L, self.update_L, self.data_gen_L, blit=True, interval=1,
                               repeat=True)
@@ -204,6 +205,7 @@ class MyTableWidget(QWidget):
         xmin, xmax = self.ax_R.get_xlim()
         #print("x = ", x,"        ", "y =" , y)
         if x >= xmax:
+        
             self.ax_R.set_xlim(0, 2*xmax)
             #plt.draw()
             self.ax_R.figure.canvas.draw()
