@@ -52,9 +52,20 @@ class Rigol_app():
         ## Then ask how many points it will actually give you, as it may not give you exactly what you want.
         NUMBER_OF_POINTS_TO_ACTUALLY_RETRIEVE = int(self.KsInfiniiVisionX.query(":WAVeform:POINts?"))
         print("NUMBER_OF_POINTS_TO_ACTUALLY_RETRIEVE is:", NUMBER_OF_POINTS_TO_ACTUALLY_RETRIEVE)
-
-
-        self.Wav_Data = []
+        
+        Pre = self.KsInfiniiVisionX.query(":WAVeform:PREamble?").split(',') # This does need to be set to a channel that is on, but that is already done... e.g. Pre = KsInfiniiVisionX.query(":WAVeform:SOURce CHANnel" + str(FIRST_CHANNEL_ON) + ";PREamble?").split(',')
+        ## While these values can always be used for all analog channels, they need to be retrieved and used separately for math/other waveforms as they will likely be different.
+        #ACQ_TYPE    = float(Pre[1]) # Gives the scope Acquisition Type; this is already done above in this particular script
+        self.X_INCrement = float(Pre[4]) # Time difference between data points; Could also be found with :WAVeform:XINCrement? after setting :WAVeform:SOURce
+        self.X_ORIGin    = float(Pre[5]) # Always the first data point in memory; Could also be found with :WAVeform:XORigin? after setting :WAVeform:SOURce
+        self.X_REFerence = float(Pre[6]) # Specifies the data point associated with x-origin; The x-reference point is the first point displayed and XREFerence is always 0.; Could also be found with :WAVeform:XREFerence? after setting :WAVeform:SOURce
+        self.Y_INCrement = float(Pre[7]) # Time difference between data points; Could also be found with :WAVeform:XINCrement? after setting :WAVeform:SOURce
+        self.Y_ORIGin    = float(Pre[8]) # Always the first data point in memory; Could also be found with :WAVeform:XORigin? after setting :WAVeform:SOURce
+        self.Y_REFerence = float(Pre[9]) # Specifies the data point associated with x-origin; The x-reference point is the first point displayed and XREFerence is always 0.; Could also be found with :WAVeform:XREFerence? after setting :WAVeform:SOURce
+        print("Pre is:", Pre)
+        ## This could have been pulled earlier...
+        
+        
         self.delt_N =400
         if self.delt_N > MAX_CURRENTLY_AVAILABLE_POINTS:
 
@@ -64,6 +75,8 @@ class Rigol_app():
 
     
     def get_data(self):
+        self.Wav_Data = []
+        DataTime = []
         for i in range(int(1200/self.delt_N)):
             #print(":WAV:STAR " +  str(i*self.delt_N+1))
             #print(":WAV:STOP "+  str((i+1)*self.delt_N))
@@ -74,7 +87,13 @@ class Rigol_app():
             #print(data)
             self.Wav_Data = np.append(self.Wav_Data, self.data)
         
-        return  self.Wav_Data
+        
+        self.Wav_Data = ((self.Wav_Data-self.Y_REFerence)*self.Y_INCrement)+self.Y_ORIGin
+        Number_data = (self.Wav_Data).size
+        #print(Number_data)
+        DataTime = ((np.linspace(0,Number_data-1,Number_data)-self.X_REFerence)*self.X_INCrement)+self.X_ORIGin
+
+        return  DataTime, self.Wav_Data
 
 
 
@@ -87,10 +106,10 @@ if __name__ == "__main__":
 
 
     now = time.clock() # Only to show how long it takes to transfer and scale the data.
-    y  = Rigol_scop.get_data()
+    x, y  = Rigol_scop.get_data()
 
     print ("\n\nIt took " + str(time.clock() - now) + " seconds to transfer and scale ")
-    plt.plot(y)
+    plt.plot(x, y)
     plt.show()
 
     print("-----  The end !  --------")

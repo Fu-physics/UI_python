@@ -24,8 +24,13 @@ import matplotlib.animation as animation
 
 import nidaqmx
 
-from dy_plot import UI_figure
+# from dy_plot import UI_figure
 import Scope_data
+
+from UI_figure_anim_plot import UI_figure
+
+from Rigol import Rigol_app
+
 
 progname = os.path.basename(sys.argv[0])
 progversion = "0.1"
@@ -172,22 +177,59 @@ class MyTableWidget(QWidget):
             self.amp = i 
             print(i)
             print("amp = ", self.amp)
-    
+
+    def single_data_gen(self, t=0):
+            cnt = 0
+            t = 0
+            while cnt < 1000:
+                cnt += 1
+                t += 0.1
+                yield t, np.sin(t)
     def plot_L(self):
-        app = UI_figure(self.figure_L)
-        app.UI_plot()
-        app.UI_print()
+
+        method = "add"
+        data = self.single_data_gen()
+        app = UI_figure(self.figure_L, data, method)
+        app.UI_Animation_plot()
+
+
+    def array_data_gen(self, t = 0):
+        cnt = 0
+        sample_num = 300
+        while cnt< 100*sample_num:
+            t = (cnt*sample_num + np.linspace(0,sample_num-1,sample_num))*0.01
+            data = np.sin(t)
+            cnt +=1
+            yield t, data
+
+    def Rigol_data_gen(self):
+        cnt = 1
+        Rigol_scop = Rigol_app()
+        Rigol_scop.preparing()
+
+        while cnt:
+            time, volt  = Rigol_scop.get_data()
+            cnt +=1
+            yield time, volt
     
     def plot_R(self):
-        app = UI_figure(self.figure_R)
-        app.UI_plot()
-        app.UI_print()
+        #method = "add"
+        method = "renew"
+        plot_axis =[-0.06,0.06,-1,6]
+        #data = self.array_data_gen()
+        data = self.Rigol_data_gen()
+        app = UI_figure(self.figure_R, data, method, plot_axis)
+        app.UI_Animation_plot()
+
  
     def plot_tab1(self):
+        
+        '''
         figure_tab1 = plt.figure()
         app = UI_figure(figure_tab1)
         app.UI_plot()
         app.UI_print()
+        '''
 
  
 if __name__ == '__main__':
