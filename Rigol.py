@@ -56,16 +56,33 @@ class Rigol_app():
         Pre = self.KsInfiniiVisionX.query(":WAVeform:PREamble?").split(',') # This does need to be set to a channel that is on, but that is already done... e.g. Pre = KsInfiniiVisionX.query(":WAVeform:SOURce CHANnel" + str(FIRST_CHANNEL_ON) + ";PREamble?").split(',')
         ## While these values can always be used for all analog channels, they need to be retrieved and used separately for math/other waveforms as they will likely be different.
         #ACQ_TYPE    = float(Pre[1]) # Gives the scope Acquisition Type; this is already done above in this particular script
-        self.X_INCrement = float(Pre[4]) # Time difference between data points; Could also be found with :WAVeform:XINCrement? after setting :WAVeform:SOURce
-        self.X_ORIGin    = float(Pre[5]) # Always the first data point in memory; Could also be found with :WAVeform:XORigin? after setting :WAVeform:SOURce
-        self.X_REFerence = float(Pre[6]) # Specifies the data point associated with x-origin; The x-reference point is the first point displayed and XREFerence is always 0.; Could also be found with :WAVeform:XREFerence? after setting :WAVeform:SOURce
-        self.Y_INCrement = float(Pre[7]) # Time difference between data points; Could also be found with :WAVeform:XINCrement? after setting :WAVeform:SOURce
-        self.Y_ORIGin    = float(Pre[8]) # Always the first data point in memory; Could also be found with :WAVeform:XORigin? after setting :WAVeform:SOURce
-        self.Y_REFerence = float(Pre[9]) # Specifies the data point associated with x-origin; The x-reference point is the first point displayed and XREFerence is always 0.; Could also be found with :WAVeform:XREFerence? after setting :WAVeform:SOURce
         print("Pre is:", Pre)
+        #self.X_INCrement = float(Pre[4]) # Time difference between data points; Could also be found with :WAVeform:XINCrement? after setting :WAVeform:SOURce
+        #self.X_ORIGin    = float(Pre[5]) # Always the first data point in memory; Could also be found with :WAVeform:XORigin? after setting :WAVeform:SOURce
+        #self.X_REFerence = float(Pre[6]) # Specifies the data point associated with x-origin; The x-reference point is the first point displayed and XREFerence is always 0.; Could also be found with :WAVeform:XREFerence? after setting :WAVeform:SOURce
+        #self.Y_INCrement = float(Pre[7]) # Time difference between data points; Could also be found with :WAVeform:XINCrement? after setting :WAVeform:SOURce
+        #self.Y_ORIGin    = float(Pre[8]) # Always the first data point in memory; Could also be found with :WAVeform:XORigin? after setting :WAVeform:SOURce
+        #self.Y_REFerence = float(Pre[9]) # Specifies the data point associated with x-origin; The x-reference point is the first point displayed and XREFerence is always 0.; Could also be found with :WAVeform:XREFerence? after setting :WAVeform:SOURce
+        
         ## This could have been pulled earlier...
         
-        
+        #Y INC for wav data
+        self.Y_INCrement = self.KsInfiniiVisionX.query_ascii_values(":WAV:YINC?")[0]
+        # Y origin for wav data
+        self.Y_ORIGin = self.KsInfiniiVisionX.query_ascii_values(":WAV:YOR?")[0]
+        # Y REF for wav data
+        self.Y_REFerence  = self.KsInfiniiVisionX.query_ascii_values(":WAV:YREF?")[0]
+        #
+
+        # X origin for wav data
+        self.X_ORIGin = self.KsInfiniiVisionX.query_ascii_values(":WAV:XOR?")[0]
+        # X REF for wav data
+        self.X_REFerence  = self.KsInfiniiVisionX.query_ascii_values(":WAV:XREF?")[0]
+        # X INC for wav data
+        self.X_INCrement = self.KsInfiniiVisionX.query_ascii_values(":WAV:XINC?")[0]
+        print("X_INCrement", self.X_INCrement , "X_ORIGin", self.X_ORIGin, "X_REFerence", self.X_REFerence)
+        print( "Y_INCrement", self.Y_INCrement, "Y_ORIGin", self.Y_ORIGin, "Y_REFerence", self.Y_REFerence )
+
         self.delt_N =400
         if self.delt_N > MAX_CURRENTLY_AVAILABLE_POINTS:
 

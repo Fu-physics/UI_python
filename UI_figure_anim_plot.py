@@ -22,12 +22,26 @@ class UI_figure:
                   "add"   : add the new datas into plot
                   "renew" : abort previous figure frame, just plot the newdatas. 
 
-    2) If you want use this module independently, such as selftest, you need to make some change.
+    2) data = self.data_gen, which is passed from outside. 
+            the  self.data_gen must be generated like this way:
+
+                " def data_gen():
+                     ....
+                     yield t, amp
+                "
+                it is a two dimensional np.array datas generated from generator function. 
+                If you want see the datas, there are two ways:
+                    1) next(data_gen())
+                    2) for t, amp in data_gen():
+                            print(t, amp)
+
+
+    3) If you want use this module independently, such as selftest, you need to make some change.
             (1) delete "plt.ion()"
             (2) change "self.ax.figure.canvas.draw()" to be "plt.show()"
         Orthewise, you could not see the plot figure.
 
-    3) "self.ax.figure.canvas.draw()", which redraw the figure, makes bad. should be delete.
+    4) "self.ax.figure.canvas.draw()", which redraw the figure, makes bad. should be delete.
 
     """  
     def __init__(self, figure, data_gen, method = "add", plot_axis = [0,0,0,0]):
@@ -74,6 +88,7 @@ class UI_figure:
         #plt.show()   
 
     def plot_method(self, data):
+
         x, y = data
         #
         #print("x is:" , x)

@@ -24,12 +24,13 @@ import matplotlib.animation as animation
 
 import nidaqmx
 
-# from dy_plot import UI_figure
+import dy_plot
 import Scope_data
 
 from UI_figure_anim_plot import UI_figure
 
 from Rigol import Rigol_app
+import NI_USB
 
 
 progname = os.path.basename(sys.argv[0])
@@ -96,7 +97,7 @@ class MyTableWidget(QWidget):
         self.button_scope = QPushButton("Get Scope Figure")
         self.button_scope.clicked.connect(self.get_Scope_fig)
 
-        self.button_plot_tab1 = QPushButton('Plot')           # Just some button connected to `plot` method
+        self.button_plot_tab1 = QPushButton('Plot')           #button connected to `plot` method
         self.button_plot_tab1.clicked.connect(self.plot_tab1)
 
         self.tab1_layout_R.addWidget(self.btn)             # add buttons onto tabl1.layout
@@ -185,13 +186,29 @@ class MyTableWidget(QWidget):
                 cnt += 1
                 t += 0.1
                 yield t, np.sin(t)
+
+    def NI_data_gen(self):
+
+        cnt = 1
+        NI = NI_USB.NI_AI()
+        while cnt:
+            t, amp = NI.Read_Data(sample_num = 500)
+            yield t, amp
+
     def plot_L(self):
 
+        data = self.NI_data_gen()
+        method = "renew"
+        plot_axis =[1,500,-3,3]
+        app = UI_figure(self.figure_L, data, method, plot_axis)
+        app.UI_Animation_plot()
+            
+        '''
         method = "add"
         data = self.single_data_gen()
         app = UI_figure(self.figure_L, data, method)
         app.UI_Animation_plot()
-
+        '''
 
     def array_data_gen(self, t = 0):
         cnt = 0
@@ -215,7 +232,7 @@ class MyTableWidget(QWidget):
     def plot_R(self):
         #method = "add"
         method = "renew"
-        plot_axis =[-0.06,0.06,-1,6]
+        plot_axis =[-0.3,0.3,-2,6]
         #data = self.array_data_gen()
         data = self.Rigol_data_gen()
         app = UI_figure(self.figure_R, data, method, plot_axis)
@@ -223,13 +240,13 @@ class MyTableWidget(QWidget):
 
  
     def plot_tab1(self):
-        
-        '''
         figure_tab1 = plt.figure()
-        app = UI_figure(figure_tab1)
+
+        app = dy_plot.UI_figure(figure_tab1)
         app.UI_plot()
         app.UI_print()
-        '''
+        
+        
 
  
 if __name__ == '__main__':

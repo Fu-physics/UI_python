@@ -15,8 +15,11 @@ import matplotlib.pyplot as plt
 USER_REQUESTED_POINTS = 1000
 GLOBAL_TOUT =  10000 # IO time out in milliseconds
 
-SCOPE_VISA_ADDRESS = "USB0::0x0957::0x1734::MY44001859::0::INSTR" # Get this from Keysight IO Libraries Connection Expert
+# Agilent TEC
+#SCOPE_VISA_ADDRESS = "USB0::0x0957::0x1734::MY44001859::0::INSTR" # Get this from Keysight IO Libraries Connection Expert
 
+## rigol 
+SCOPE_VISA_ADDRESS = "USB0::0x1AB1::0x04CE::DS1ZB154600675::0::INSTR"
 ## Save Locations
 ## Data Save constants
 workingdirectory = os.getcwd()  #check working directory again
@@ -35,7 +38,6 @@ sys.stdout.write("Script is running.  This may take a while...")
 rm = visa.ResourceManager()
 #rm = visa.ResourceManager('C:\\Program Files (x86)\\IVI Foundation\\VISA\\WinNT\\agvisa\\agbin\\visa32.dll')
 KsInfiniiVisionX = rm.open_resource(SCOPE_VISA_ADDRESS)
-
 KsInfiniiVisionX.timeout = GLOBAL_TOUT
 
 ## Clear the instrument bus
@@ -47,6 +49,7 @@ KsInfiniiVisionX.clear()
 IDN = str(KsInfiniiVisionX.query("*IDN?"))
 ## Parse IDN
 IDN = IDN.split(',') # IDN parts are separated by commas, so parse on the commas
+
 MODEL = IDN[1]
 if list(MODEL[1]) == "9": # This is the test for the PXIe scope, M942xA)
     NUMBER_ANALOG_CHS = 2
@@ -202,12 +205,12 @@ MAX_CURRENTLY_AVAILABLE_POINTS = int(KsInfiniiVisionX.query(":WAVeform:POINts?")
         ## number of channels on, and the acquisition method (:RUNS/:STOP, :SINGle, :DIGitize), and :WAV:POINts:MODE
 
 ## The scope will return a -222,"Data out of range" error if fewer than 100 points are requested, even though it may actually return fewer than 100 points.
-if USER_REQUESTED_POINTS < 100:
-    USER_REQUESTED_POINTS = 100
+if USER_REQUESTED_POINTS < 200:
+    USER_REQUESTED_POINTS = 200
 ## One may also wish to do other tests, such as: is it a whole number (integer)?, is it real? and so forth...
 
-if MAX_CURRENTLY_AVAILABLE_POINTS < 100:
-    MAX_CURRENTLY_AVAILABLE_POINTS = 100
+if MAX_CURRENTLY_AVAILABLE_POINTS < 200:
+    MAX_CURRENTLY_AVAILABLE_POINTS = 200
 
 if USER_REQUESTED_POINTS > MAX_CURRENTLY_AVAILABLE_POINTS or ACQ_TYPE == "PEAK":
      USER_REQUESTED_POINTS = MAX_CURRENTLY_AVAILABLE_POINTS
@@ -301,13 +304,10 @@ for channel_number in CHS_ON:
 
         i +=1
 
-# print(Wav_Data)
+print(Wav_Data)
+print("lence of Wave_Data is :", len(Wav_Data))
+print("USER_REQUESTED_POINTS  is:", USER_REQUESTED_POINTS)
 
-## Reset the chunk size back to default if needed.
-if TOTAL_BYTES_TO_XFER >= 400000:
-    KsInfiniiVisionX.chunk_size = 20480
-    ## If you don't do this, and now wanted to do something else... such as ask for a measurement result, and leave the chunk size set to something large,
-        ## it can really slow down the script, so set it back to default, which works well.
 
 del i, channel_number
 print ("\n\nIt took " + str(time.clock() - now) + " seconds to transfer and scale " + str(NUMBER_CHANNELS_ON) + " channel(s). Each channel had " + str(NUMBER_OF_POINTS_TO_ACTUALLY_RETRIEVE) + " points.\n")
@@ -322,20 +322,6 @@ KsInfiniiVisionX.close()
 del KsInfiniiVisionX
 
 
-########################################################
-## As CSV - easy to deal with later, but slow and large
-########################################################
-
-## Create header
-header = "Time (s),"
-
-print("hearder is:",header)
-for channel_number in CHS_ON:
-    if channel_number == LAST_CHANNEL_ON:
-        header = header + "Channel " + str(channel_number) + " (" + CH_UNITS[channel_number-1] + ")\n"
-    else:
-        header = header + "Channel " + str(channel_number) + " (" + CH_UNITS[channel_number-1] + "),"
-del channel_number
 
 ## Save data
 
